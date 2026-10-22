@@ -362,102 +362,78 @@
     });
   }
 
-  // HERO — controlador único dos vídeos cinematográficos.
-  // Os três arquivos permanecem no diretório "Todas as Imagens/Videos".
+  // Hero automático: vídeos iniciam muted quando o hero está visível.
+  // Ao sair completamente da tela, pausam; ao retornar, retomam sozinhos.
   const heroVideos = Array.from(document.querySelectorAll(".hero-slide video.hero-video"));
-  const heroTexas = document.querySelector(".hero-slide-texas .hero-video-2");
-  let texasRestarting = false;
+  const heroSection = document.querySelector("section.hero");
+  let heroInView = true;
+  let heroTimer = 0;
 
-  function videoSource(video){
-    return video?.dataset?.videoSrc || video?.querySelector("source")?.src || video?.getAttribute("src") || "";
+  function pauseHeroVideos(){
+    heroVideos.forEach(video=>{ try{ video.pause(); }catch{} });
   }
-
-  function prepareHeroVideo(video,loadNow=true){
+  function playActiveHeroVideo(){
+    if(!heroInView || document.hidden) return;
+    const video=heroVideos[state.slide];
     if(!video) return;
-    video.muted = true;
-    video.defaultMuted = true;
-    video.autoplay = true;
-    video.loop = true;
-    video.playsInline = true;
-    video.controls = false;
-    video.preload = loadNow ? "auto" : "metadata";
-    if(loadNow){
-      const src = videoSource(video);
-      if(src && video.getAttribute("src") !== src){ video.src = src; }
-      if(video.readyState < 2){ try{ video.load(); }catch{} }
+    const src=video.dataset.videoSrc;
+    if(src && !video.getAttribute("src")){
+      video.src=src;
+      video.load();
     }
+    video.muted=true;
+    video.defaultMuted=true;
+    video.loop=true;
+    video.playsInline=true;
+    const attempt=video.play();
+    if(attempt && typeof attempt.catch==="function") attempt.catch(()=>{});
   }
-
-  function playHeroVideo(video){
-    if(!video) return;
-    prepareHeroVideo(video);
-    if(document.hidden) return;
-    const attempt = video.play();
-    if(attempt && typeof attempt.catch === "function") attempt.catch(()=>{});
-  }
-
-  function syncHeroVideos(){
-    heroVideos.forEach((video,index)=>{
-      const active = index === state.slide;
-      if(active){
-        playHeroVideo(video);
-      }else{
-        video.preload="none";
-        if(!video.paused) video.pause();
-      }
-    });
-  }
-
-  function restartTexasSmoothly(){
-    if(!heroTexas || texasRestarting || document.hidden || state.slide !== 1) return;
-    texasRestarting = true;
-    const slide = heroTexas.closest(".hero-slide-texas");
-    slide?.classList.add("is-video-restarting");
-    try{ heroTexas.currentTime = 0; }catch{}
-    playHeroVideo(heroTexas);
-    setTimeout(()=>{
-      slide?.classList.remove("is-video-restarting");
-      texasRestarting = false;
-    },180);
-  }
-
   function goSlide(i){
     state.slide=(i+3)%3;
     document.querySelectorAll(".hero-slide").forEach((slide,n)=>slide.classList.toggle("is-active",n===state.slide));
-    syncHeroVideos();
+    pauseHeroVideos();
+    playActiveHeroVideo();
     buildHeroDots();
   }
-
   $("heroPrev").onclick=()=>goSlide(state.slide-1);
   $("heroNext").onclick=()=>goSlide(state.slide+1);
   buildHeroDots();
 
+  // Só o vídeo do slide ativo é solicitado; os demais aguardam.
   heroVideos.forEach((video,index)=>{
-    prepareHeroVideo(video,index===state.slide);
-    video.addEventListener("loadedmetadata",syncHeroVideos,{once:false});
-    video.addEventListener("canplay",syncHeroVideos,{once:false});
-    video.addEventListener("playing",()=>video.closest(".hero-slide")?.classList.add("video-ready"));
-    video.addEventListener("error",()=>{
-      const active=video.closest(".hero-slide")?.classList.contains("is-active");
-      const src=videoSource(video);
-      if(active && src && !video.dataset.retryAttempted){
-        video.dataset.retryAttempted="1";
-        try{ video.src=src; video.load(); playHeroVideo(video); }catch{}
-      }
-    });
+    video.preload="none";
+    video.addEventListener("ended",()=>{ if(index===state.slide && heroInView) goSlide(state.slide+1); });
   });
-  heroTexas?.addEventListener("ended",restartTexasSmoothly);
-  ["pointerdown","touchstart","keydown"].forEach(eventName=>{
-    document.addEventListener(eventName,()=>{
-      const active=heroVideos[state.slide];
-      if(active && active.paused) playHeroVideo(active);
-    },{passive:true,once:false});
-  });
-  syncHeroVideos();
-  document.addEventListener("visibilitychange",()=>{
-    if(document.hidden) heroVideos.forEach(video=>video.pause());
-    else syncHeroVideos();
-  });
+
+  function startHeroTimer(){
+    if(!heroTimer && heroInView && !document.hidden){
+      heroTimer=setInterval(()=>goSlide(state.slide+1),15000);
+    }
+  }
+  function stopHeroTimer(){
+    if(heroTimer){clearInterval(heroTimer);heroTimer=0;}
+  }
+  function syncHeroVisibility(){
+    if(heroInView && !document.hidden){
+      playActiveHeroVideo();
+      startHeroTimer();
+    }else{
+      pauseHeroVideos();
+      stopHeroTimer();
+    }
+  }
+  if("IntersectionObserver" in window && heroSection){
+    const heroObserver=new IntersectionObserver(entries=>{
+      const entry=entries[0];
+      // Pause only when the entire hero has left the viewport.
+      heroInView=entry.intersectionRatio>0;
+      syncHeroVisibility();
+    },{threshold:[0,0.01]});
+    heroObserver.observe(heroSection);
+  }
+  document.addEventListener("visibilitychange",syncHeroVisibility);
+  // Initial attempt after layout/observer setup.
+  syncHeroVisibility();
 
   // Botões "Ver produto" do hero: cada slide abre diretamente o produto correspondente.
   // Slide 1 → PARIS | Slide 2 → TEXAS | Slide 3 → BLIM-BLIM.
@@ -469,12 +445,6 @@
       if (product) navigateToProduct(product);
     });
   });
-
-  let heroTimer=0;
-  const startHeroTimer=()=>{if(!heroTimer && !document.hidden) heroTimer=setInterval(()=>goSlide(state.slide+1),15000)};
-  const stopHeroTimer=()=>{if(heroTimer){clearInterval(heroTimer);heroTimer=0}};
-  startHeroTimer();
-  document.addEventListener("visibilitychange",()=>document.hidden?stopHeroTimer():startHeroTimer());
 
   // Hero Signature: parallax 3D leve, brilho responsivo e pausa inteligente no hover.
   document.querySelectorAll('.hero-slide-luxury').forEach(luxuryHero=>{
