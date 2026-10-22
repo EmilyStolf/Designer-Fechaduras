@@ -1,0 +1,11 @@
+{
+  "name": "designer-fechaduras",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node servidor-local.js"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}

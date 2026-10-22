@@ -1,0 +1,30 @@
+DESIGNER FECHADURAS — PACOTE COMPLETO ORGANIZADO
+
+Conteúdo
+- index.html: página principal
+- css/styles.css: estilos
+- js/: scripts e dados do site
+- data/: dados auxiliares
+- Todas as Imagens/: imagens, logos, banners e vídeos
+- arquivos de configuração (package.json, vercel.json etc.)
+
+IMPORTANTE
+Este pacote preserva a estrutura e os caminhos existentes do projeto. Não renomeie as pastas
+(css, js, data ou Todas as Imagens), pois o site referencia esses caminhos.
+
+PUBLICAÇÃO PELO GITHUB DESKTOP
+1. Extraia este ZIP para uma pasta.
+2. Copie o conteúdo extraído para a pasta local correta do repositório Designer-Fechaduras
+   (a pasta aberta por Repository > Show in Explorer no GitHub Desktop).
+3. No GitHub Desktop, confira a aba Changes e confirme que css/styles.css, js/ e
+   Todas as Imagens/ aparecem como alterações/arquivos novos.
+4. Faça commit e clique em Push origin.
+5. Na Vercel, aguarde o deploy ficar Ready. Depois teste o domínio e atualize a página
+   com Ctrl+Shift+R.
+
+Não altere domínio ou registros DNS para corrigir arquivos ausentes. Se a página ficar sem
+estilo, confira no GitHub se css/styles.css está no caminho exato css/styles.css.
+
+Nota de validação: os caminhos locais referenciados diretamente pelo HTML foram conferidos
+contra os arquivos presentes no ZIP. Isso não substitui um teste visual completo no navegador
+nem confirma que o deploy da Vercel terminou com sucesso.
