@@ -10,7 +10,79 @@
   ready.then(() => {
   const $ = id => document.getElementById(id);
   const normalize = s => (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+  // Canoniza marcas e materiais em todo o catálogo e nos filtros/buscas.
+  // Mantém nomes comerciais conhecidos em uma grafia única, independentemente
+  // de caixa, acentos, espaços ou pequenas variações de escrita.
+  const BRAND_ALIASES = new Map([
+    ["imab","IMAB"],["dss","DSS"],["ds","DSS"],["dsₛ","DSS"],["zen","ZEN"],["virtuslock","VirtusLock"],["virtuslock","VirtusLock"],["timmer","Timmer"],["perfil","PERFIL"],
+    ["pado","Pado"],["stam","STAM"],["haga","HAGA"],
+    ["uniaomundial","UNIÃO MUNDIAL"],["3f","3F"],["assaabloy","ASSA ABLOY"],["silvanaassaabloy","ASSA ABLOY"],
+    ["papaiz","Papaiz"],["hafele","Häfele"],["fermax","Fermax"],
+    ["grancasa","Gran Casa"],["lafonte","La Fonte"],
+    ["blimblim","Blim-Blim"],["paris","Paris"],["texas","Texas"]
+  ]);
+  const canonicalBrand = value => {
+    const raw=String(value||"").trim();
+    const key=normalize(raw).replace(/[^a-z0-9]/g,"");
+    if(!key) return "";
+    if(BRAND_ALIASES.has(key)) return BRAND_ALIASES.get(key);
+    // Para marcas não listadas, unifica maiúsculas/minúsculas sem inventar
+    // siglas: mantém a primeira grafia disponível do catálogo.
+    return raw.replace(/\\s+/g," ");
+  };
+  const canonicalMaterial = value => {
+    const raw=String(value||"").trim(), n=normalize(raw).replace(/\\s+/g," ");
+    if(!n) return "";
+    if(/zamac|zamak/.test(n)) return "Zamak";
+    if(/aco inox|inoxidavel|inox/.test(n)) return "Inox";
+    if(/aco carbono|carbono/.test(n)) return "Aço Carbono";
+    return raw;
+  };
+  const canonicalFilterText = value => normalize(value).replace(/\\s+/g," ").trim();
+  const canonicalSearchQuery = value => {
+    let q=normalize(value).replace(/\\s+/g," ").trim();
+    const replacements=[
+      [/\\b(dsₛ|dss|ds)\\b/g,"dss"],[/\\b(imab)\\b/g,"imab"],
+      [/\\b(zamac|zamack|zamak)\\b/g,"zamak"],
+      [/\\b(virtus\\s*lock|virtuslock)\\b/g,"virtuslock"],
+      [/\\b(assa\\s*abloy|silvana\\s*assa\\s*abloy)\\b/g,"assa abloy"]
+    ];
+    replacements.forEach(([pattern,replacement])=>q=q.replace(pattern,replacement));
+    return q;
+  };
+  const SUBCATEGORY_ALIASES = new Map([
+    ["fechos","Fechos"],["ferrolho trinco","Ferrolho/Trinco"],["ferrolho/trinco","Ferrolho/Trinco"],
+    ["mola","Molas"],["molas","Molas"],["pivo","Pivôs"],["pivos","Pivôs"],
+    ["prendedor","Prendedores"],["prendedores","Prendedores"],["vedacao","Vedação"],
+    ["porta de correr","Porta de Correr"],["portas de correr","Portas de Correr"],
+    ["olho magico","Olho Mágico"],["dobradica de inox","Dobradiça de Inox"],
+    ["dobradica de aco carbono","Dobradiça de Aço Carbono"],
+    ["sobrepor de inox","Sobrepor de Inox"],["sobrepor de aco carbono","Sobrepor de Aço Carbono"],
+    ["concha","Concha"],["puxador tubular","Puxador Tubular"]
+  ]);
+  const canonicalSubcategory = value => {
+    const raw=String(value||"").trim();
+    if(!raw) return "";
+    if(raw.includes("|")) return raw.split("|").map(part=>canonicalSubcategory(part)).join("|");
+    const key=canonicalFilterText(raw);
+    return SUBCATEGORY_ALIASES.get(key) || raw.replace(/\\s+/g," ");
+  };
+  const canonicalColorName = value => {
+    const n=canonicalFilterText(value);
+    const aliases={
+      "preto fosco":"Preto Fosco","preto":"Preto","escovado":"Escovado","escovada":"Escovado",
+      "polido":"Polido","polida":"Polido","dourado":"Dourado","dourada":"Dourado",
+      "cromado":"Cromado","cromada":"Cromado","antique":"Antique","inox polido":"Inox Polido",
+      "inox escovado":"Inox Escovado","branco":"Branco","marrom":"Marrom","natural":"Natural",
+      "zamac":"Zamak","zamak":"Zamak"
+    };
+    return aliases[n] || String(value||"").trim();
+  };
   const SEARCH_ALIASES = [
+    ["zamak","zamac","zamak","zamac"],
+    ["imab","IMAB","Imab"],
+    ["dss","DSS","dss"],
+    ["zen","ZEN","Zen"],
     ["visor de porta","olho magico","visor","visor de porta digital"],
     ["fechadura eletronica","fechadura digital","smart lock","digital lock"],
     ["fechadura inteligente","fechadura digital","smart lock"],
@@ -22,13 +94,7 @@
     ["mola aerea","mola aérea","mola"],
     ["olho magico","visor de porta","visor"]
   ];
-  const canonicalMaterial = value => {
-    const n=normalize(value);
-    if(n.includes("zamak")) return "Zamak";
-    if(n.includes("inox") || n.includes("aco inox")) return "Inox";
-    if(n.includes("aco carbono") || n.includes("carbono")) return "Aço Carbono";
-    return String(value||"").trim();
-  };
+  // canonicalMaterial definido no bloco de normalização global acima.\n
   const productMaterials = p => [...new Set([p?.material,p?.basic?.Material,p?.technical?.Material].filter(Boolean).map(canonicalMaterial))];
   const productColors = p => [...new Set((Array.isArray(p?.colors)?p.colors.map(c=>c?.name).filter(Boolean):[]).concat(p?.color?[p.color]:[]))];
   const COLOR_FILTERS = [
@@ -101,6 +167,15 @@
   // Índices estáveis para evitar buscas lineares e JSON.stringify a cada interação.
   // A camada de categorização automática é instalada por products.js e já
   // normaliza todo o catálogo antes destes índices serem criados.
+  PRODUCTS.forEach(p=>{
+    if(p.brand) p.brand=canonicalBrand(p.brand);
+    if(p.material) p.material=canonicalMaterial(p.material);
+    if(p.basic && p.basic.Material) p.basic.Material=canonicalMaterial(p.basic.Material);
+    if(p.technical && p.technical.Material) p.technical.Material=canonicalMaterial(p.technical.Material);
+    if(p.subcategory) p.subcategory=canonicalSubcategory(p.subcategory);
+    if(Array.isArray(p.colors)) p.colors.forEach(c=>{if(c?.name)c.name=canonicalColorName(c.name)});
+    if(p.color) p.color=canonicalColorName(p.color);
+  });
   const PRODUCTS_BY_ID=new Map(PRODUCTS.map(p=>[p.id,p]));
   const PRODUCT_SEARCH_TEXT=new Map(PRODUCTS.map(p=>[p.id,normalize(JSON.stringify(p)+" "+(p.name||"")+" "+(p.description||""))]));
 
@@ -3171,15 +3246,15 @@
   }
   function renderBrands(){
     const select=$("brandFilter"), current=select.value;
-    const brands=[...new Set([...STATIC_BRANDS,...PRODUCTS.map(p=>p.brand).filter(Boolean)])].sort((a,b)=>normalize(a).localeCompare(normalize(b)));
+    const brands=[...new Set([...STATIC_BRANDS,...PRODUCTS.map(p=>p.brand).filter(Boolean)].map(canonicalBrand).filter(Boolean))].sort((a,b)=>normalize(a).localeCompare(normalize(b)));
     select.innerHTML=`<option value="">${escapeHtml(t("catalog.allBrands"))}</option>`;
     brands.forEach(b=>{const o=document.createElement("option");o.value=b;o.textContent=b;select.appendChild(o)});
-    select.value=brands.includes(current)?current:"";
+    select.value=brands.find(b=>canonicalFilterText(b)===canonicalFilterText(canonicalBrand(current)))||"";
   }
   function renderSubcategories(){
     const select=$("subcategoryFilter"), current=select.value;
     const source=state.activeCategory ? PRODUCTS.filter(p=>p.category===state.activeCategory) : PRODUCTS;
-    const values=[...new Set(source.map(p=>p.subcategory).filter(Boolean))].sort();
+    const values=[...new Set(source.map(p=>canonicalSubcategory(p.subcategory)).filter(Boolean))].sort((a,b)=>normalize(a).localeCompare(normalize(b)));
     const mechanicalChoices=["Portas de Abrir","Portas de Correr","Portas de Vidro","Portas Pivotantes","Portas de Alumínio"];
     const digitalChoices=["Digital|Embutir|Portas de Abrir","Digital|Embutir|Portas de Correr","Digital|Embutir|Portas de Vidro","Digital|Sobrepor|Portas de Abrir","Digital|Sobrepor|Portas de Correr","Digital|Sobrepor|Portas de Vidro","Digital|Móveis"];
     const extraMechanical = state.activeCategory==="mechanical" ? mechanicalChoices.filter(v=>!values.includes(v)) : [];
@@ -3206,10 +3281,10 @@
   }
   function renderMaterials(){
     const select=$("materialFilter"), current=select.value;
-    const values=[...new Set(PRODUCTS.flatMap(productMaterials).filter(Boolean))].sort((a,b)=>normalize(a).localeCompare(normalize(b)));
+    const values=[...new Set(PRODUCTS.flatMap(productMaterials).filter(Boolean).map(canonicalMaterial))].sort((a,b)=>normalize(a).localeCompare(normalize(b)));
     select.innerHTML=`<option value="">${escapeHtml(t("catalog.allMaterials"))}</option>`;
     values.forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;select.appendChild(o)});
-    select.value=values.includes(current)?current:"";
+    select.value=values.find(v=>canonicalFilterText(v)===canonicalFilterText(canonicalMaterial(current)))||"";
   }
   function renderChips(){
     // Os filtros rápidos de tecnologia (Senha, RFID, Sobrepor,
@@ -3451,14 +3526,14 @@
     if(!strictPlacementAllowed(p)) return false;
     if(!placementMatches(p)) return false;
     if(!hingeMaterialInvariant(p)) return false;
-    const q=normalize($("searchInput").value);
+    const q=canonicalSearchQuery($("searchInput").value);
     const searchBlock=classifySearchBlock(q);
     if(q && searchBlock && !searchBlockMatchesProduct(p,searchBlock)) return false;
     const categoryValue=$("categoryFilter")?.value||"";
     const categoryOk=!categoryValue || p.category===categoryValue;
-    const brandOk=!$("brandFilter").value || normalize(p.brand)===normalize($("brandFilter").value);
+    const brandOk=!$("brandFilter").value || canonicalFilterText(canonicalBrand(p.brand))===canonicalFilterText(canonicalBrand($("brandFilter").value));
     const selectedSubcategory=$("subcategoryFilter").value;
-    let subcategoryOk=!selectedSubcategory || p.subcategory===selectedSubcategory;
+    let subcategoryOk=!selectedSubcategory || canonicalFilterText(canonicalSubcategory(p.subcategory))===canonicalFilterText(canonicalSubcategory(selectedSubcategory));
     if(state.activeCategory==="digital" && state.digitalInstall && !selectedSubcategory){
       subcategoryOk = p.digitalInstall ? normalize(p.digitalInstall)===normalize(state.digitalInstall) : false;
     }

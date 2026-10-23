@@ -14906,3 +14906,185 @@ picture::selection {
   .site-header .desktop-nav { gap:12px; }
   .site-header .desktop-nav > a, .site-header .products-nav-trigger { font-size:12px; }
 }
+
+
+/* =========================================================
+   ACESSIBILIDADE — TELAS GRANDES / MONITORES / TV
+   Aumenta legibilidade e área de toque sem alterar o layout
+   de tablets e celulares.
+   ========================================================= */
+@media (min-width: 1500px) {
+  body { font-size: 17px; }
+  .site-header {
+    height: 88px; top: 18px; left: 28px; right: 28px;
+    padding: 0 28px; border-radius: 22px;
+  }
+  .brand { gap: 14px; min-width: 275px; }
+  .brand-logo { width: 68px; height: 72px; flex-basis: 68px; }
+  .brand-logo img { width: 68px; height: 72px; }
+  .brand-name strong { font-size: 19px; }
+  .brand-name small { font-size: 12px; letter-spacing: .16em; }
+  .desktop-nav { gap: clamp(18px, 1.35vw, 30px); font-size: 15px; }
+  .products-nav-trigger span { font-size: 14px; }
+  .header-actions { gap: 12px; }
+  .header-actions .icon-btn { width: 50px; height: 50px; font-size: 25px; }
+  .account-btn { min-height: 52px; padding: 0 22px; font-size: 15px; font-weight: 600; }
+  .quote-btn {
+    min-height: 52px; padding: 0 25px; display: inline-flex;
+    align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; border-radius: 999px;
+  }
+  .products-dropdown { width: 310px; padding: 16px; }
+  .products-dropdown > a, .products-dropdown-group a { font-size: 14px; padding: 11px 12px; }
+  .products-dropdown-group > span { font-size: 12px; padding: 7px 12px; }
+  .section-kicker { font-size: 13px; }
+  .section-title, .section-heading h2 { font-size: clamp(32px, 2.2vw, 46px); }
+  .section-subtitle, .section-heading p { font-size: 18px; line-height: 1.65; }
+  .btn, .button, .filter-btn { min-height: 48px; font-size: 15px; padding: 13px 22px; }
+  .product-card h3, .product-info h3 { font-size: 17px; line-height: 1.45; }
+  .product-card p, .product-info p { font-size: 15px; line-height: 1.6; }
+  .product-card .price, .product-info .price { font-size: 17px; }
+  .category-card h3 { font-size: 19px; }
+  .category-card p { font-size: 15px; line-height: 1.5; }
+  .hero-content h1 { font-size: clamp(42px, 4vw, 72px); }
+  .hero-content p { font-size: clamp(17px, 1.25vw, 22px); line-height: 1.6; }
+  .account-btn, .quote-btn, .icon-btn, .menu-btn { min-width: 48px; }
+  :where(a, button, input, select, textarea):focus-visible {
+    outline: 3px solid #f0cf83; outline-offset: 4px;
+  }
+}
+@media (min-width: 2100px) {
+  .site-header { height: 104px; left: 42px; right: 42px; top: 24px; padding: 0 36px; }
+  .brand { min-width: 320px; }
+  .brand-logo { width: 82px; height: 86px; flex-basis: 82px; }
+  .brand-logo img { width: 82px; height: 86px; }
+  .brand-name strong { font-size: 22px; }
+  .brand-name small { font-size: 13px; }
+  .desktop-nav { font-size: 17px; gap: clamp(22px, 1.4vw, 36px); }
+  .header-actions { gap: 16px; }
+  .account-btn, .quote-btn { min-height: 60px; font-size: 17px; padding-left: 28px; padding-right: 28px; }
+  .header-actions .icon-btn { width: 58px; height: 58px; font-size: 29px; }
+  .products-dropdown { width: 350px; }
+  .products-dropdown > a, .products-dropdown-group a { font-size: 16px; }
+  .section-subtitle, .section-heading p { font-size: 20px; }
+  .product-card h3, .product-info h3 { font-size: 19px; }
+  .product-card p, .product-info p { font-size: 17px; }
+  .category-card h3 { font-size: 22px; }
+}
+
+
+/* MENU FIXO — escala fluida por largura de tela (zoom do navegador em 100%) */
+@media (min-width: 951px) {
+  .site-header {
+    height: clamp(78px, 5.2vw, 112px) !important;
+    top: clamp(12px, 1.1vw, 24px) !important;
+    left: clamp(18px, 2vw, 44px) !important;
+    right: clamp(18px, 2vw, 44px) !important;
+    padding-inline: clamp(20px, 2.2vw, 48px) !important;
+    gap: clamp(12px, 1.4vw, 30px) !important;
+  }
+  .site-header .brand {
+    min-width: clamp(220px, 19vw, 360px) !important;
+    gap: clamp(10px, 1.1vw, 20px) !important;
+  }
+  .site-header .brand-logo,
+  .site-header .brand-logo img {
+    width: clamp(54px, 4.2vw, 88px) !important;
+    height: clamp(56px, 4.5vw, 92px) !important;
+    flex-basis: clamp(54px, 4.2vw, 88px) !important;
+  }
+  .site-header .brand-name strong {
+    font-size: clamp(16px, 1.05vw, 23px) !important;
+  }
+  .site-header .brand-name small {
+    font-size: clamp(10px, .65vw, 14px) !important;
+  }
+  .site-header .desktop-nav {
+    gap: clamp(14px, 1.35vw, 32px) !important;
+    font-size: clamp(13px, .82vw, 18px) !important;
+    flex: 0 1 auto;
+  }
+  .site-header .desktop-nav > a,
+  .site-header .desktop-nav .products-nav-trigger {
+    font-size: clamp(13px, .82vw, 18px) !important;
+    white-space: nowrap;
+  }
+  .site-header .products-nav-trigger span {
+    font-size: clamp(11px, .72vw, 15px) !important;
+  }
+  .site-header .header-actions {
+    gap: clamp(6px, .7vw, 16px) !important;
+  }
+  .site-header .header-actions .icon-btn {
+    width: clamp(42px, 3.3vw, 62px) !important;
+    height: clamp(42px, 3.3vw, 62px) !important;
+    font-size: clamp(21px, 1.5vw, 30px) !important;
+  }
+  .site-header .account-btn,
+  .site-header .quote-btn {
+    min-height: clamp(44px, 3.5vw, 64px) !important;
+    padding-inline: clamp(14px, 1.5vw, 30px) !important;
+    font-size: clamp(13px, .9vw, 18px) !important;
+    white-space: nowrap;
+  }
+  .site-header .products-dropdown {
+    width: clamp(260px, 22vw, 380px) !important;
+  }
+  .site-header .products-dropdown > a,
+  .site-header .products-dropdown-group a {
+    font-size: clamp(12px, .8vw, 17px) !important;
+    padding-block: clamp(9px, .65vw, 14px) !important;
+  }
+}
+/* Em telas de celular/tablet estreito, o menu recolhido continua compacto e utilizável. */
+@media (max-width: 950px) {
+  .site-header { min-height: 68px !important; height: auto !important; }
+}
+
+/* CORREÇÃO: cabeçalho fixo encostado às bordas da janela */
+.site-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  transform: none !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+}
+
+
+/* Ajuste solicitado: bloco de texto do slide Paris alinhado à mesma altura do slide 2 */
+.hero-slide-1 .hero-content{
+  top:auto!important;
+  bottom:clamp(72px,10vh,112px)!important;
+  left:7vw!important;
+  right:auto!important;
+  width:min(650px,calc(100vw - 14vw))!important;
+  max-width:650px!important;
+  transform:none!important;
+}
+@media (min-width:651px) and (max-width:1100px){
+  .hero-slide-1 .hero-content{
+    left:6vw!important;
+    bottom:105px!important;
+    width:min(590px,58vw)!important;
+    max-width:590px!important;
+  }
+}
+@media (max-width:650px){
+  .hero-slide-1 .hero-content{
+    top:auto!important;
+    left:24px!important;
+    right:24px!important;
+    bottom:86px!important;
+    width:auto!important;
+    max-width:none!important;
+    transform:none!important;
+  }
+}
+@media (max-width:380px){
+  .hero-slide-1 .hero-content{left:18px!important;right:18px!important;bottom:76px!important;}
+}

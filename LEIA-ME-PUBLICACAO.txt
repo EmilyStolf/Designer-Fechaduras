@@ -28,3 +28,7 @@ estilo, confira no GitHub se css/styles.css está no caminho exato css/styles.cs
 Nota de validação: os caminhos locais referenciados diretamente pelo HTML foram conferidos
 contra os arquivos presentes no ZIP. Isso não substitui um teste visual completo no navegador
 nem confirma que o deploy da Vercel terminou com sucesso.
+
+
+VARIANTE COM ACESSIBILIDADE PARA TELAS GRANDES
+Inclui CSS para ampliar cabeçalho, logo, navegação, botões Orçamento/Minha conta e alguns textos em monitores largos/TVs. Faça teste visual responsivo antes de publicar.
