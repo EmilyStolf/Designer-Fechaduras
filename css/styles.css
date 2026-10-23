@@ -15088,3 +15088,57 @@ picture::selection {
 @media (max-width:380px){
   .hero-slide-1 .hero-content{left:18px!important;right:18px!important;bottom:76px!important;}
 }
+
+
+/* HERO — tipografia maior em monitores grandes; notebook e mobile preservados */
+@media (min-width: 1500px) {
+  .hero-slide .hero-kicker {
+    font-size: clamp(11px, .78vw, 15px) !important;
+    letter-spacing: .24em !important;
+    margin-bottom: clamp(16px, 1.1vw, 24px) !important;
+  }
+  .hero-slide .eyebrow {
+    font-size: clamp(12px, .82vw, 16px) !important;
+    margin-bottom: clamp(12px, .8vw, 18px) !important;
+  }
+  .hero-slide h1 {
+    font-size: clamp(58px, 5vw, 104px) !important;
+    max-width: 900px !important;
+    line-height: 1.02 !important;
+  }
+  .hero-slide .hero-luxury-copy {
+    font-size: clamp(18px, 1.25vw, 25px) !important;
+    max-width: 680px !important;
+    line-height: 1.6 !important;
+    margin-top: clamp(20px, 1.4vw, 30px) !important;
+  }
+  .hero-slide .hero-product-name {
+    font-size: clamp(11px, .76vw, 15px) !important;
+    max-width: 480px !important;
+  }
+  .hero-slide .hero-product-link-wrap {
+    gap: clamp(16px, 1.2vw, 26px) !important;
+    margin-top: clamp(26px, 1.7vw, 36px) !important;
+  }
+  .hero-slide .hero-product-link,
+  .hero-slide .hero-product-link.btn,
+  .hero-slide .btn-gold {
+    min-width: clamp(158px, 10vw, 210px) !important;
+    min-height: clamp(48px, 3.2vw, 64px) !important;
+    height: auto !important;
+    padding: 0 clamp(22px, 1.5vw, 32px) !important;
+    font-size: clamp(11px, .78vw, 16px) !important;
+  }
+  .hero-slide .hero-actions {
+    margin-top: clamp(16px, 1.1vw, 24px) !important;
+  }
+  .hero-slide .hero-ghost-link {
+    font-size: clamp(11px, .76vw, 15px) !important;
+  }
+}
+@media (min-width: 2100px) {
+  .hero-slide-1 .hero-content {
+    width: min(850px, 48vw) !important;
+    max-width: 850px !important;
+  }
+}
